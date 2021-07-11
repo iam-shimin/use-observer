@@ -5,7 +5,9 @@ type ObserverType = {
   rootMargin?: string,
 };
 
-export function useObserver({ threshold, rootMargin = '0px' }: ObserverType) {
+type ObserverCallback = (entries: IntersectionObserverEntry[]) => void;
+
+export function useObserver({ threshold, rootMargin = '0px' }: ObserverType, callback: ObserverCallback) {
 
   const [inView, setInView] = useState<boolean>();
   const ref = useRef<any>();
@@ -17,9 +19,11 @@ export function useObserver({ threshold, rootMargin = '0px' }: ObserverType) {
       rootMargin: rootMargin,
       threshold: threshold
     }
-    
+
     iObserverRef.current = new IntersectionObserver((entries) => {
-      if (inView !== entries[0].isIntersecting) {
+      if (typeof callback === 'function') {
+        callback(entries);
+      } else if (inView !== entries[0].isIntersecting) {
         setInView(entries[0].isIntersecting);
       }
     }, options);
